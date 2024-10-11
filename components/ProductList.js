@@ -1,13 +1,11 @@
-// components/ProductList.js
-
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, Button, Alert } from 'react-native';
 import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ProductList = ({ navigation }) => {
     const [products, setProducts] = useState([]);
 
-    // Función para obtener los productos
     const fetchProducts = async () => {
         try {
             const response = await axios.get('http://192.168.31.94:8000/api/products');
@@ -17,49 +15,38 @@ const ProductList = ({ navigation }) => {
         }
     };
 
-    // Función para eliminar un producto
+    useFocusEffect(
+        useCallback(() => {
+            fetchProducts(); // Cargar productos al enfocar la pantalla
+        }, [])
+    );
+
     const deleteProduct = async (id) => {
         try {
             await axios.delete(`http://192.168.31.94:8000/api/products/${id}`);
-            fetchProducts(); // Volver a obtener los productos después de eliminar
+            fetchProducts(); // Recargar productos después de eliminar
         } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar el producto.');
             console.error('Error deleting product:', error);
         }
     };
 
-    // Función para confirmar la eliminación
-    const confirmDelete = (id) => {
-        Alert.alert(
-            "Confirmar eliminación",
-            "¿Estás seguro de que deseas eliminar este producto?",
-            [
-                { text: "Cancelar", style: "cancel" },
-                { text: "Eliminar", onPress: () => deleteProduct(id) }
-            ]
-        );
-    };
-
-    useEffect(() => {
-        fetchProducts(); // Obtener los productos al montar el componente
-    }, []);
-
-    // Renderizar cada elemento de la lista
-    const renderItem = ({ item }) => (
-        <View style={{ padding: 10, borderBottomWidth: 1, borderColor: '#ccc' }}>
-            <Text>{item.description}</Text>
-            <Text>Precio: ${item.price}</Text>
-            <Text>Stock: {item.stock}</Text>
-            <Button title="Editar" onPress={() => navigation.navigate('ProductForm', { product: item })} />
-            <Button title="Eliminar" color="red" onPress={() => confirmDelete(item.id)} />
-        </View>
-    );
-
     return (
-        <View style={{ flex: 1, padding: 20 }}>
+        <View>
+            <Button
+                title="Crear Producto"
+                onPress={() => navigation.navigate('ProductForm', { product: null })} // Navegar a la pantalla de creación
+            />
             <FlatList
                 data={products}
-                renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                    <View>
+                        <Text>{item.description}</Text>
+                        <Button title="Edit" onPress={() => navigation.navigate('ProductForm', { product: item })} />
+                        <Button title="Delete" onPress={() => deleteProduct(item.id)} />
+                    </View>
+                )}
             />
         </View>
     );

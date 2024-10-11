@@ -1,6 +1,3 @@
-// App.js
-
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import ProductList from './components/ProductList';
@@ -8,7 +5,7 @@ import ProductForm from './components/ProductForm';
 
 const Stack = createStackNavigator();
 
-const App = () => {
+export default function App() {
     return (
         <NavigationContainer>
             <Stack.Navigator initialRouteName="ProductList">
@@ -17,6 +14,4 @@ const App = () => {
             </Stack.Navigator>
         </NavigationContainer>
     );
-};
-
-export default App;
+}

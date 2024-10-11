@@ -1,32 +1,43 @@
-// components/ProductForm.js
-
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Alert } from 'react-native';
 import axios from 'axios';
 
-const API_URL = 'http://192.168.31.94:8000/api/products';
-
 const ProductForm = ({ route, navigation }) => {
-    const { product } = route.params || {};
-    const [description, setDescription] = useState(product ? product.description : '');
-    const [price, setPrice] = useState(product ? product.price.toString() : '');
-    const [stock, setStock] = useState(product ? product.stock.toString() : '');
+    const { product } = route.params; // Obtener el producto desde los parámetros de la ruta
+
+    const [description, setDescription] = useState('');
+    const [price, setPrice] = useState('');
+    const [stock, setStock] = useState('');
+
+    useEffect(() => {
+        if (product) {
+            setDescription(product.description);
+            setPrice(product.price.toString());
+            setStock(product.stock.toString());
+        }
+    }, [product]);
 
     const handleSubmit = async () => {
         try {
             if (product) {
-                // Update existing product
-                await axios.put(`${API_URL}/${product.id}`, { description, price, stock });
-                Alert.alert('Éxito', 'Producto actualizado correctamente.');
+                // Actualizar el producto existente
+                await axios.put(`http://192.168.31.94:8000/api/products/${product.id}`, {
+                    description,
+                    price,
+                    stock,
+                });
             } else {
-                // Create new product
-                await axios.post(API_URL, { description, price, stock });
-                Alert.alert('Éxito', 'Producto creado correctamente.');
+                // Crear un nuevo producto
+                await axios.post('http://192.168.31.94:8000/api/products', {
+                    description,
+                    price,
+                    stock,
+                });
             }
-            navigation.navigate('ProductList');
+            navigation.navigate('ProductList'); // Regresar a la lista
         } catch (error) {
-            console.error(error);
             Alert.alert('Error', 'No se pudo guardar el producto.');
+            console.error('Error saving product:', error);
         }
     };
 
@@ -40,16 +51,16 @@ const ProductForm = ({ route, navigation }) => {
             <TextInput
                 placeholder="Precio"
                 value={price}
-                keyboardType="numeric"
                 onChangeText={setPrice}
+                keyboardType="numeric"
             />
             <TextInput
                 placeholder="Stock"
                 value={stock}
-                keyboardType="numeric"
                 onChangeText={setStock}
+                keyboardType="numeric"
             />
-            <Button title="Guardar" onPress={handleSubmit} />
+            <Button title={product ? "Actualizar Producto" : "Crear Producto"} onPress={handleSubmit} />
         </View>
     );
 };
